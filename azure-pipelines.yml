@@ -29,13 +29,13 @@ stages:
         pool:
           vmImage: $(vmImageName)
         steps:
-          - task: Maven@3
+          - task: Maven@4
             displayName: 'Maven Build'
             inputs:
               mavenPomFile: 'pom.xml'
               goals: 'clean compile test package'
               publishJUnitResults: true
-              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '1.17'
               mavenVersionOption: 'Default'
@@ -56,11 +56,12 @@ stages:
 
           - task: PublishTestResults@2
             displayName: 'Publish Test Results'
+            condition: succeededOrFailed()
             inputs:
               testResultsFormat: 'JUnit'
-              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              testResultsFiles: '**/target/surefire-reports/TEST-*.xml'
               failTaskOnFailedTests: true
-            condition: always()
+              testRunTitle: 'JUnit Test Results'
 
   - stage: Deploy
     displayName: Deploy to ACI
@@ -87,7 +88,7 @@ stages:
                         --resource-group $(resourceGroup) \
                         --name $(containerInstanceName) \
                         --yes || true
-                      
+
                       az container create \
                         --resource-group $(resourceGroup) \
                         --name $(containerInstanceName) \
@@ -103,18 +104,18 @@ stages:
                           SPRING_PROFILES_ACTIVE=testing \
                           SERVER_PORT=8080 \
                         --restart-policy OnFailure
-                      
+
                       echo "Waiting for container to be ready..."
                       sleep 30
-                      
+
                       az container show \
                         --resource-group $(resourceGroup) \
                         --name $(containerInstanceName) \
                         --query "{FQDN:ipAddress.fqdn,ProvisioningState:provisioningState}" \
                         --output table
-                      env:
-                        acrUsername: $(acrUsername)
-                        acrPassword: $(acrPassword)
+                  env:
+                    acrUsername: $(acrUsername)
+                    acrPassword: $(acrPassword)
 
   - stage: Test
     displayName: Automated Testing
@@ -143,15 +144,15 @@ stages:
                   --name $(containerInstanceName) \
                   --query "ipAddress.fqdn" \
                   --output tsv)
-                
+
                 echo "Testing application at: http://$FQDN:8080"
-                
+
                 npm install -g newman
-                
+
                 curl -f http://$FQDN:8080/health || exit 1
-                
+
                 curl -f http://$FQDN:8080/api/finance/status || exit 1
-                
+
                 echo "All tests passed successfully!"
 
   - stage: Monitor
@@ -177,11 +178,11 @@ stages:
                   --resource-group $(resourceGroup) \
                   --kind web \
                   --application-type web
-                
+
                 INSTRUMENTATION_KEY=$(az monitor app-insights component show \
                   --app finance-app-insights \
                   --resource-group $(resourceGroup) \
                   --query "instrumentationKey" \
                   --output tsv)
-                
+
                 echo "Application Insights configured with key: $INSTRUMENTATION_KEY"
