@@ -4,38 +4,13 @@ This project implements a CI/CD pipeline using **Azure DevOps** to build, test, 
 
 ---
 
-## 📁 Project Structure
-
-finance-app/
-├── .azure/ # Azure DevOps pipeline configs & ARM templates
-│ ├── pipelines/
-│ │ ├── azure-pipelines.yml
-│ │ ├── build-template.yml
-│ │ └── deploy-template.yml
-│ └── arm-templates/
-├── src/ # Spring Boot application source
-│ ├── main/
-│ │ └── java/com/finance/app/
-│ └── test/
-├── tests/ # Integration and performance tests
-│ ├── integration/
-│ └── performance/
-├── scripts/ # Deployment scripts
-├── docker/
-├── .env.template
-├── pom.xml
-└── README.md
-
-
----
-
 ## 🧰 Prerequisites
 
 ### Tools
 
 - Azure CLI (v2.50+)
 - Docker (v24+)
-- Java JDK 17
+- Java JDK 21
 - Maven (v3.9+)
 - Git
 - Node.js (for API testing)
