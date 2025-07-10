@@ -9,7 +9,8 @@ trigger:
       - docs/*
 
 variables:
-  containerRegistry: 'financeappacr-connection'
+  acrServiceConnection: 'financeappacr-connection'
+  containerRegistryUrl: 'financeappacr.azurecr.io'
   imageRepository: 'finance-app'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
@@ -49,7 +50,7 @@ stages:
               command: buildAndPush
               repository: $(imageRepository)
               dockerfile: $(dockerfilePath)
-              containerRegistry: $(containerRegistry)
+              containerRegistry: $(acrServiceConnection)
               tags: |
                 $(tag)
                 latest
@@ -90,20 +91,22 @@ stages:
                         --yes || true
 
                       az container create \
-                        --resource-group $(resourceGroup) \
-                        --name $(containerInstanceName) \
-                        --image $(containerRegistry)/$(imageRepository):$(tag) \
-                        --dns-name-label finance-app-$(Build.BuildId) \
-                        --ports 8080 \
-                        --cpu 1 \
-                        --memory 2 \
-                        --registry-server $(containerRegistry) \
-                        --registry-username $(acrUsername) \
-                        --registry-password $(acrPassword) \
-                        --environment-variables \
-                          SPRING_PROFILES_ACTIVE=testing \
-                          SERVER_PORT=8080 \
-                        --restart-policy OnFailure
+                      --resource-group $(resourceGroup) \
+                      --name $(containerInstanceName) \
+                      --image $(containerRegistryUrl)/$(imageRepository):$(tag) \
+                      --os-type Linux \
+                      --dns-name-label finance-app-$(Build.BuildId) \
+                      --ports 8080 \
+                      --cpu 1 \
+                      --memory 2 \
+                      --registry-login-server $(containerRegistryUrl) \
+                      --registry-username $(acrUsername) \
+                      --registry-password $(acrPassword) \
+                      --environment-variables \
+                        SPRING_PROFILES_ACTIVE=testing \
+                        SERVER_PORT=8080 \
+                      --restart-policy OnFailure
+
 
                       echo "Waiting for container to be ready..."
                       sleep 30
