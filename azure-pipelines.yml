@@ -3,13 +3,13 @@ trigger:
     include:
       - main
       - develop
-    paths:
-      exclude:
-        - README.md
-        - docs/*
+  paths:
+    exclude:
+      - README.md
+      - docs/*
 
 variables:
-  containerRegistry: 'financeappacr.azurecr.io'
+  containerRegistry: 'financeappacr-connection'
   imageRepository: 'finance-app'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
@@ -32,10 +32,10 @@ stages:
           - task: Maven@3
             displayName: 'Maven Build'
             inputs:
-              mavenPomFiles: 'pom.xml'
+              mavenPomFile: 'pom.xml'
               goals: 'clean compile test package'
               publishJUnitResults: true
-              testResultFiles: '**/surefile-reports/TEST-*.xml'
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '1.17'
               mavenVersionOption: 'Default'
@@ -44,7 +44,7 @@ stages:
               sonarQubeRunAnalysis: false
 
           - task: Docker@2
-            displayName: 'Build and Push image'
+            displayName: 'Build and push image'
             inputs:
               command: buildAndPush
               repository: $(imageRepository)
@@ -57,8 +57,8 @@ stages:
           - task: PublishTestResults@2
             displayName: 'Publish Test Results'
             inputs:
-              testResultFormat: 'JUnit'
-              testResultFiles: '**/surefile-reports/TEST-*.xml'
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
               failTaskOnFailedTests: true
             condition: always()
 
@@ -83,15 +83,38 @@ stages:
                     scriptType: 'bash'
                     scriptLocation: 'inlineScript'
                     inlineScript: |
-                      az container delete --resource-group $(resourceGroup) --name $(containerInstanceName) --yes || true
-                      az container create --resource-group $(resourceGroup) --name $(containerInstanceName) --image $(containerRegistry)/$(imageRepositoy):$(tag) --dns-name-label finance-app-$(Build.BuildId) --ports 8080 --cpu 1 --memory 2 --registry-server $(containerRegistry) --registry-username $(acrUsername) --registry-password $(acrPassword) --environment-variables SPRING_PROFILE_ACTIVE=testing SERVER_PORT=8080 --restart-policy OnFailure
+                      az container delete \
+                        --resource-group $(resourceGroup) \
+                        --name $(containerInstanceName) \
+                        --yes || true
+                      
+                      az container create \
+                        --resource-group $(resourceGroup) \
+                        --name $(containerInstanceName) \
+                        --image $(containerRegistry)/$(imageRepository):$(tag) \
+                        --dns-name-label finance-app-$(Build.BuildId) \
+                        --ports 8080 \
+                        --cpu 1 \
+                        --memory 2 \
+                        --registry-server $(containerRegistry) \
+                        --registry-username $(acrUsername) \
+                        --registry-password $(acrPassword) \
+                        --environment-variables \
+                          SPRING_PROFILES_ACTIVE=testing \
+                          SERVER_PORT=8080 \
+                        --restart-policy OnFailure
+                      
                       echo "Waiting for container to be ready..."
                       sleep 30
                       
-                      az container show --resource-group $(resourceGroup) --name $(containerInstanceName) --query "{FQDN:ipAddress.fqdn,ProvisioningState:provisioningState}" --output table
-                    env:
-                      acrUsername: $(acrUsername)
-                      acrPassword: $(acrPassword)
+                      az container show \
+                        --resource-group $(resourceGroup) \
+                        --name $(containerInstanceName) \
+                        --query "{FQDN:ipAddress.fqdn,ProvisioningState:provisioningState}" \
+                        --output table
+                      env:
+                        acrUsername: $(acrUsername)
+                        acrPassword: $(acrPassword)
 
   - stage: Test
     displayName: Automated Testing
@@ -104,7 +127,7 @@ stages:
           vmImage: $(vmImageName)
         steps:
           - task: NodeTool@0
-            displayName: "Install Node.js"
+            displayName: 'Install Node.js'
             inputs:
               versionSpec: '18.x'
 
@@ -115,11 +138,20 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                FQDN=$(az container show --resource-group $(resourceGroup) --name $(containerInstanceName) --query "ipAddress.fqdn" --output tsv)
-                echo "Testing application at: http://FQDN:8080"
+                FQDN=$(az container show \
+                  --resource-group $(resourceGroup) \
+                  --name $(containerInstanceName) \
+                  --query "ipAddress.fqdn" \
+                  --output tsv)
+                
+                echo "Testing application at: http://$FQDN:8080"
+                
                 npm install -g newman
+                
                 curl -f http://$FQDN:8080/health || exit 1
+                
                 curl -f http://$FQDN:8080/api/finance/status || exit 1
+                
                 echo "All tests passed successfully!"
 
   - stage: Monitor
@@ -133,12 +165,23 @@ stages:
           vmImage: $(vmImageName)
         steps:
           - task: AzureCLI@2
-            displayName: "Configure Application Insights"
+            displayName: 'Configure Application Insights'
             inputs:
               azureSubscription: $(azureSubscription)
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az monitor app-insights component create --app finance-app-insights --location eastus --resource-group $(resourceGroup) --kind web --application-type web
-                INSTRUMENTATION_KEY=$(az monitor app-insights components show --app finance-app-insights --resource-group $(resourceGroup) --query "instrumentationKey" --output tsv)
+                az monitor app-insights component create \
+                  --app finance-app-insights \
+                  --location eastus \
+                  --resource-group $(resourceGroup) \
+                  --kind web \
+                  --application-type web
+                
+                INSTRUMENTATION_KEY=$(az monitor app-insights component show \
+                  --app finance-app-insights \
+                  --resource-group $(resourceGroup) \
+                  --query "instrumentationKey" \
+                  --output tsv)
+                
                 echo "Application Insights configured with key: $INSTRUMENTATION_KEY"
