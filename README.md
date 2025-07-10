@@ -10,7 +10,7 @@ This project implements a CI/CD pipeline using **Azure DevOps** to build, test, 
 
 - Azure CLI (v2.50+)
 - Docker (v24+)
-- Java JDK 17
+- Java JDK 21
 - Maven (v3.9+)
 - Git
 - Node.js (for API testing)
