@@ -15,9 +15,9 @@ This project implements a CI/CD pipeline using **Azure DevOps** to build, test, 
 This repository includes comprehensive documentation to understand the project architecture and implementation:
 
 ### 📁 Documentation Files
-- **[High Level Architecture Diagram](High level financeapp.drawio.pdf)** - Overview of the system architecture and component interactions
-- **[Low Level Design Diagram](Low level financeapp.drawio.pdf)** - Detailed technical design and implementation specifics
-- **[Final Project Documentation](Final Documentation.pdf)** - Complete project documentation with deployment guide and best practices
+- **[High Level Design Diagram](https://github.com/ayush2442/finance/blob/e9a0d33547c610d1b23917ea498aaca57bb935d0/High%20level%20financeapp.drawio.pdf)** - Overview of the system architecture and component interactions
+- **[Low Level Design Diagram](https://github.com/ayush2442/finance/blob/e9a0d33547c610d1b23917ea498aaca57bb935d0/Low%20level%20financeapp.drawio.pdf)** - Detailed technical design and implementation specifics
+- **[Final Project Documentation](https://github.com/ayush2442/finance/blob/e9a0d33547c610d1b23917ea498aaca57bb935d0/Final%20Documentation.pdf)** - Complete project documentation with deployment and outcome
 
 *Note: All documentation files are available in the root directory of this repository.*
 
