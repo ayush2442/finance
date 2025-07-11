@@ -3,7 +3,25 @@
 This project implements a CI/CD pipeline using **Azure DevOps** to build, test, and deploy a **Spring Boot application** into **Azure Container Instances (ACI)** with support for **container image scanning**, **monitoring**, and **zero-downtime deployment**.
 
 ---
+## 🔗 Azure DevOps Project
+[![Azure DevOps Project](https://img.shields.io/badge/View-Azure_DevOps_Project-blue?logo=azuredevops&style=for-the-badge)](https://dev.azure.com/22BDO10038/finance)
 
+## 🛠 Build Status
+[![Build Status](https://dev.azure.com/22BDO10038/finance/_apis/build/status/finance-ci?branchName=main)](https://dev.azure.com/22BDO10038/finance/_build/latest?definitionId=1&branchName=main)
+
+---
+## 📋 Project Documentation
+
+This repository includes comprehensive documentation to understand the project architecture and implementation:
+
+### 📁 Documentation Files
+- **[High Level Architecture Diagram](High level financeapp.drawio.pdf)** - Overview of the system architecture and component interactions
+- **[Low Level Design Diagram](Low level financeapp.drawio.pdf)** - Detailed technical design and implementation specifics
+- **[Final Project Documentation](Final Documentation.pdf)** - Complete project documentation with deployment guide and best practices
+
+*Note: All documentation files are available in the root directory of this repository.*
+
+---
 ## 🧰 Prerequisites
 
 ### Tools
@@ -11,7 +29,7 @@ This project implements a CI/CD pipeline using **Azure DevOps** to build, test, 
 - Azure CLI (v2.50+)
 - Docker (v24+)
 - Java JDK 21
-- Maven (v3.9+)
+- Maven (v4.0+)
 - Git
 - Node.js (for API testing)
 
@@ -46,6 +64,7 @@ source .env
 ```bash
 ./scripts/deploy-infrastructure.sh
 ```
+---
 
 ## 🚀 CI/CD Pipeline
 The pipeline (azure-pipelines.yml) automates:
@@ -62,6 +81,8 @@ The pipeline (azure-pipelines.yml) automates:
 
 6. Monitor: Integrated with Application Insights
 
+---
+
 ## 🧪 Testing Strategy
 
 ### Unit Tests (Java - JUnit)
@@ -77,6 +98,7 @@ tests/integration/api-tests.js includes:
 ### Load Tests
 tests/performance/load-test.js sends concurrent requests and captures response time.
 
+---
 
 ## 🐳 Docker (Multi-stage Build)
 
@@ -93,6 +115,7 @@ COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
+---
 
 ## 📈 Monitoring
 Application Insights is integrated for:
@@ -103,6 +126,7 @@ Application Insights is integrated for:
 
 - Custom dashboards
 
+---
 
 ## 🔐 Security
 
@@ -114,9 +138,20 @@ Application Insights is integrated for:
 
 - Secrets stored in Azure DevOps Library
 
+---
 
 ## 📬 API Endpoints
 
 - GET /actuator/health
 
 - GET /api/finance/status
+
+---
+
+## 📊 Success Metrics
+
+* **Build Success Rate**: >95%
+* **Deployment Time**: <5 minutes
+* **Test Coverage**: >80%
+* **Application Uptime**: >99%
+* **Response Time**: <2 seconds
